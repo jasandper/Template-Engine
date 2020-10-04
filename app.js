@@ -10,24 +10,12 @@ const outputPath = path.join(OUTPUT_DIR, "team.html");
 
 const render = require("./lib/htmlRenderer");
 
+const roster = [];
+
 
 
 const managerInfo = [
-    {
-        type: "input",
-        message:"Managers name?",
-        name: 'managerName'
-    },
-    {
-        type: "input",
-        message:"Managers Id?",
-        name: "mangerId"
-    },
-    {
-        type: "input",
-        message: "Managers email?",
-        name: "managerEmail"
-    },
+    
     {
         type: "input",
         message: "Managers Office Phone Number?",
@@ -36,34 +24,40 @@ const managerInfo = [
 ]
 
 const menu = [
+
     {
         type: "list",
-        message: "Add an Engineer, Intern, or done?",
-        name: "choice",
+        message: "Add a Manager,Engineer, or Intern",
+        name: "employeeChoice",
         choices: [
+            'manager',
             'engineer',
             'intern',
             'done'
+            
         ]
-    }
+    },]
+
+const commonQuestions = [
+    {
+        type: "input",
+        message:"name?",
+        name: 'employeeName'
+    },
+    {
+        type: "input",
+        message:"Id?",
+        name: "employeeId"
+    },
+    {
+        type: "input",
+        message: "email?",
+        name: "employeeEmail"
+    },
 ]
 
 const engineerInfo = [
-    {
-        type: "input",
-        message:"Engineers name?",
-        name: 'engineerName'
-    },
-    {
-        type: "input",
-        message:"Engineers Id?",
-        name: "engineerId"
-    },
-    {
-        type: "input",
-        message: "Engineers email?",
-        name: "engineerEmail"
-    },
+    
     {
         type: "input",
         message: "Engineer github username?",
@@ -73,56 +67,83 @@ const engineerInfo = [
 ]
 
 const internInfo = [
+    
     {
         type: "input",
-        message:"Interns name?",
-        name: 'internName'
-    },
-    {
-        type: "input",
-        message:"Interns Id?",
-        name: "internId"
-    },
-    {
-        type: "input",
-        message: "Interns email?",
-        name: "internsEmail"
-    },
-    {
-        type: "input",
-        message: "What school does the internt attend?",
+        message: "What school does the intern attend?",
         name: "internSchool"
     }
 ]
 
+
+
+// Function that adds new employees to the team
 function addToTeam (response) {
-  
-    while(res.choice !== 'done') {
-        inquirer.prompt(menu).then(res => {
-        if(res.choice === 'engineer') {
-            inquirer.prompt(engineerInfo).then(re => {
-                response.push(re);
+        if(response.employeeChoice === 'engineer') {
+            inquirer.prompt(engineerInfo).then(resp => {
+              eng = new Engineer (response.employeeName,response.employeeId,response.employeeEmail,resp.engineerGithub)
+              roster.push(eng);
+              init();
+            })
+        } else if(response.employeeChoice === 'intern'){
+            inquirer.prompt(internInfo).then(resp => {
+                int = new Intern (response.employeeName,response.employeeId,response.employeeEmail,resp.internSchool)
+                roster.push(int);
+                init();
+            })
+        } else if (response.employeeChoice === 'manager') {
+            inquirer.prompt(managerInfo).then(resp => {
+                mang = new Manager (response.employeeName,response.employeeId,response.employeeEmail, resp.managerNumber)
+                roster.push(mang);
+                init();
+
             })
         } else {
-            inquirer.prompt(internInfo).then(r => {
-                response.push(r);
+            console.log("here");
+           const manager =  roster.find(employee => {
+               return employee.getRole() === 'Manager';
+
             })
+          if(manager){
+            console.log(roster);
+              console.log("Done selecting employees")
+              return;
+          } else {
+              console.log("Must have at least one manager.")
+              promptManager();
+          }
+        
         }
-    })
-  }
 }
+  
+function promptManager() {
+    inquirer.prompt([...commonQuestions,...managerInfo]). then(response => {
+        mang = new Manager (response.employeeName,response.employeeId,response.employeeEmail, response.managerNumber)
+        roster.push(mang);
+        console.log(roster);
+        console.log("Done adding employees.")
+    })
+
+}
+
 
 
 
 function init() {
   
-  inquirer.prompt(managerInfo).then(response => {
+  inquirer.prompt(menu).then(response => {
+      if(response.employeeChoice !== 'done') {
+          inquirer.prompt(commonQuestions)
+      }
 
-//   addToTeam(response);
-    console.log(response);
+  addToTeam(response);
+
+// console.log(response);
+    
   
  
   })
+  
 
 
 }
@@ -148,4 +169,4 @@ init();
 // and Intern classes should all extend from a class named Employee; see the directions
 // for further information. Be sure to test out each class and verify it generates an
 // object with the correct structure and methods. This structure will be crucial in order
-// for the provided `render` function to work! ```
+// for the provided `render` function to work!
